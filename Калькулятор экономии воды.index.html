@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор экономии воды</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;margin:0;background:#f7fbfd;color:#17324d}
+.wrap{max-width:760px;margin:0 auto;padding:24px}
+.card{background:#fff;border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+h1{font-size:30px;margin:0 0 6px} h2{font-size:21px;margin:0 0 14px} p{line-height:1.5}
+label{display:block;font-weight:600;margin-top:14px}
+input{width:100%;box-sizing:border-box;padding:12px;margin-top:6px;border:1px solid #cbd7df;border-radius:10px;font-size:16px}
+button{width:100%;padding:14px;border:0;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;margin-top:18px}
+.result{font-size:18px;line-height:1.55}.big{font-size:28px;font-weight:800;margin:8px 0}.small{font-size:13px;color:#5e7284}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+<h1>💧 Калькулятор экономии воды</h1>
+<p><b>От одной семьи — к миллионам сохранённых литров</b></p>
+<p class="small">Основан на трёх способах экономии: закрывать кран при чистке зубов, сокращать время душа и уменьшать количество стирок за счёт рациональной загрузки.</p>
+</div>
+
+<div class="card">
+<h2>👨‍👩‍👧‍👦 Ваша семья</h2>
+<label>Количество человек (1–8)
+<input id="people" type="number" min="1" max="8" value="4">
+</label>
+</div>
+
+<div class="card">
+<h2>🪥 1. Чистка зубов</h2>
+<p class="small">При открытом кране — 5 л/мин. При закрытом кране/использовании стакана — 0,2 л за одну чистку.</p>
+<div class="grid">
+<label>Минут на одну чистку
+<input id="brushMin" type="number" min="0.5" max="10" step="0.5" value="2">
+</label>
+<label>Чисток в день на человека
+<input id="brushTimes" type="number" min="1" max="5" step="1" value="2">
+</label>
+</div>
+</div>
+
+<div class="card">
+<h2>🚿 2. Душ</h2>
+<p class="small">Расход душа — 7 л/мин.</p>
+<div class="grid">
+<label>Обычное время душа, мин
+<input id="showerOld" type="number" min="1" max="60" step="1" value="10">
+</label>
+<label>Новое время душа, мин
+<input id="showerNew" type="number" min="1" max="60" step="1" value="8">
+</label>
+<label>Сколько душей в неделю на человека
+<input id="showerWeek" type="number" min="0" max="21" step="1" value="5">
+</label>
+</div>
+</div>
+
+<div class="card">
+<h2>🧺 3. Стирка</h2>
+<p class="small">Одна стирка — примерно 130 л воды.</p>
+<div class="grid">
+<label>Стирок в неделю ДО
+<input id="washOld" type="number" min="0" max="50" step="1" value="7">
+</label>
+<label>Стирок в неделю ПОСЛЕ
+<input id="washNew" type="number" min="0" max="50" step="1" value="5">
+</label>
+</div>
+</div>
+
+<div class="card">
+<button onclick="calc()">Рассчитать экономию</button>
+<div id="out" class="result"></div>
+</div>
+
+<div class="card">
+<p><b>Большая экономия начинается с одной семьи.</b></p>
+<p class="small">Калькулятор показывает математическую модель. Реальный расход может отличаться в зависимости от привычек семьи, сантехники и бытовой техники.</p>
+</div>
+</div>
+
+<script>
+function n(id){return Number(document.getElementById(id).value||0)}
+function fmt(x){return Math.round(x).toLocaleString('ru-RU')}
+function calc(){
+const people=Math.min(8,Math.max(1,n('people')));
+const brushMin=n('brushMin'),brushTimes=n('brushTimes');
+const showerOld=n('showerOld'),showerNew=n('showerNew'),showerWeek=n('showerWeek');
+const washOld=n('washOld'),washNew=n('washNew');
+
+const brushSaveDay=Math.max(0,(5*brushMin-0.2)*brushTimes*people);
+const showerSaveWeek=Math.max(0,(showerOld-showerNew)*7*showerWeek*people);
+const washSaveWeek=Math.max(0,(washOld-washNew)*130);
+
+const year=brushSaveDay*365+showerSaveWeek*52+washSaveWeek*52;
+const month=year/12;
+const day=year/365;
+const m3=year/1000;
+
+const bYear=brushSaveDay*365;
+const sYear=showerSaveWeek*52;
+const wYear=washSaveWeek*52;
+
+document.getElementById('out').innerHTML=`
+<h2>Ваш результат</h2>
+<p>🪥 Чистка зубов: <b>${fmt(bYear)} л/год</b></p>
+<p>🚿 Душ: <b>${fmt(sYear)} л/год</b></p>
+<p>🧺 Стирка: <b>${fmt(wYear)} л/год</b></p>
+<div class="big">💧 ${fmt(year)} литров в год</div>
+<p>Это примерно <b>${m3.toFixed(1).replace('.',',')} м³</b> воды.</p>
+<p>В среднем: <b>${fmt(day)} л в день</b> и <b>${fmt(month)} л в месяц</b>.</p>
+<hr>
+<p><b>Если так будут экономить:</b></p>
+<p>10 семей → ${fmt(year*10)} л/год</p>
+<p>100 семей → ${fmt(year*100)} л/год</p>
+<p>1 000 семей → <b>${fmt(year*1000)} л/год</b></p>`;
+}
+calc();
+</script>
+</body>
+</html>
